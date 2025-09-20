@@ -1,16 +1,19 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/user.service";
 import { AuthService } from "../services/auth.service";
+import { OTPService } from "../services/otp.service";
 import { logger } from "../utils/logger";
 import { RequestWithUser } from "../types";
 
 export class AuthController {
   private userService: UserService;
   private authService: AuthService;
+  private otpService: OTPService;
 
   constructor() {
     this.userService = new UserService();
     this.authService = new AuthService();
+    this.otpService = new OTPService();
   }
 
   async login(req: Request, res: Response) {
@@ -131,6 +134,99 @@ export class AuthController {
       logger.error("Logout failed:", error);
       return res.status(500).json({
         message: "Logout failed",
+      });
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      
+      // Check if user exists
+      const user = await this.userService.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: "User not found",
+        });
+      }
+
+      // Generate OTP
+      const otp = await this.otpService.generateOTPForEmail(email, "password_reset");
+      
+      // In a real application, you would send this OTP via email/SMS
+      // For now, we'll return it in the response (remove in production)
+      logger.info(`Password reset OTP for ${email}: ${otp}`);
+      
+      res.json({
+        success: true,
+        message: "OTP sent to your email",
+        // Remove this in production
+        otp: process.env.NODE_ENV === "development" ? otp : undefined,
+      });
+    } catch (error: any) {
+      logger.error("Forgot password error:", error);
+      res.status(400).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { email, otp, newPassword } = req.body;
+      
+      // Verify OTP
+      const isValidOTP = await this.otpService.verifyOTP(email, otp, "password_reset");
+      if (!isValidOTP) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid or expired OTP",
+        });
+      }
+
+      // Update password
+      await this.userService.updateUser(email, { password: newPassword });
+      
+      res.json({
+        success: true,
+        message: "Password reset successfully",
+      });
+    } catch (error: any) {
+      logger.error("Reset password error:", error);
+      res.status(400).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  async verifyEmail(req: Request, res: Response) {
+    try {
+      const { email, otp } = req.body;
+      
+      // Verify OTP
+      const isValidOTP = await this.otpService.verifyOTP(email, otp, "email_verification");
+      if (!isValidOTP) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid or expired OTP",
+        });
+      }
+
+      // Update user as verified (you might want to add a verified field to user model)
+      await this.userService.updateUser(email, { isActive: true });
+      
+      res.json({
+        success: true,
+        message: "Email verified successfully",
+      });
+    } catch (error: any) {
+      logger.error("Email verification error:", error);
+      res.status(400).json({
+        success: false,
+        error: error.message,
       });
     }
   }

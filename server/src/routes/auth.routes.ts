@@ -5,6 +5,9 @@ import { authenticate } from "../middleware/auth.middleware";
 import {
   loginValidation,
   registerValidation,
+  forgotPasswordValidator,
+  resetPasswordValidator,
+  verifyEmailValidator,
 } from "../validation/auth.validation";
 
 const router = Router();
@@ -32,5 +35,26 @@ router.post("/refresh-token", controller.refreshToken.bind(controller));
 
 // Logout
 router.post("/logout", authenticate, controller.logout.bind(controller));
+
+// Forgot password
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordValidator),
+  controller.forgotPassword.bind(controller)
+);
+
+// Reset password
+router.post(
+  "/reset-password",
+  validate(resetPasswordValidator),
+  controller.resetPassword.bind(controller)
+);
+
+// Verify email
+router.post(
+  "/verify-email",
+  validate(verifyEmailValidator),
+  controller.verifyEmail.bind(controller)
+);
 
 export default router;

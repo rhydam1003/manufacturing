@@ -5,11 +5,13 @@ export interface IWorkOrder extends Document {
   sequence: number;
   name: string;
   workCenterId: Types.ObjectId;
-  status: "Queued" | "Started" | "Completed" | "Canceled";
+  operatorId?: Types.ObjectId; // Add missing field
+  status: "Queued" | "Started" | "Paused" | "Completed" | "Canceled"; // Add Paused status
   plannedMinutes: number;
   actualMinutes: number;
   startedAt?: Date;
   completedAt?: Date;
+  comments?: string; // Add missing field for issues/tracking
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
 }
@@ -30,13 +32,15 @@ const workOrderSchema = new Schema<IWorkOrder>(
     },
     status: {
       type: String,
-      enum: ["Queued", "Started", "Completed", "Canceled"],
+      enum: ["Queued", "Started", "Paused", "Completed", "Canceled"],
       default: "Queued",
     },
     plannedMinutes: { type: Number, required: true },
     actualMinutes: { type: Number, default: 0 },
     startedAt: { type: Date },
     completedAt: { type: Date },
+    operatorId: { type: Schema.Types.ObjectId, ref: "User" }, // Add missing field
+    comments: { type: String }, // Add missing field
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },

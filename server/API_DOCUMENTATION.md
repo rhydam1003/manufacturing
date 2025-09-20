@@ -124,6 +124,61 @@ Response:
 }
 ```
 
+#### Forgot Password
+
+```http
+POST /auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "string"
+}
+
+Response:
+{
+  "success": true,
+  "message": "OTP sent to your email",
+  "otp": "123456" // Only in development
+}
+```
+
+#### Reset Password
+
+```http
+POST /auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "string",
+  "otp": "string",
+  "newPassword": "string"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Password reset successfully"
+}
+```
+
+#### Verify Email
+
+```http
+POST /auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "string",
+  "otp": "string"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Email verified successfully"
+}
+```
+
 ### 📦 Products API (`/products`)
 
 #### Create Product
@@ -891,9 +946,587 @@ Response:
 }
 ```
 
+### 📋 Work Orders API (`/work-orders`)
+
+#### List Work Orders
+```http
+GET /work-orders?moId=string&status=string&workCenterId=string&operatorId=string&page=number&limit=number
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "string",
+      "moId": "string",
+      "sequence": number,
+      "name": "string",
+      "workCenterId": "string",
+      "operatorId": "string",
+      "status": "Queued" | "Started" | "Paused" | "Completed" | "Canceled",
+      "plannedMinutes": number,
+      "actualMinutes": number,
+      "startedAt": "string",
+      "completedAt": "string",
+      "comments": "string"
+    }
+  ],
+  "pagination": {
+    "total": number,
+    "page": number,
+    "limit": number,
+    "totalPages": number
+  }
+}
+```
+
+#### Create Work Order
+```http
+POST /work-orders
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "moId": "string",
+  "sequence": number,
+  "name": "string",
+  "workCenterId": "string",
+  "plannedMinutes": number,
+  "operatorId": "string",
+  "comments": "string"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "moId": "string",
+    "sequence": number,
+    "name": "string",
+    "workCenterId": "string",
+    "status": "Queued",
+    "plannedMinutes": number,
+    "actualMinutes": 0,
+    "createdAt": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Get Work Order by ID
+```http
+GET /work-orders/:id
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "moId": "string",
+    "sequence": number,
+    "name": "string",
+    "workCenterId": "string",
+    "operatorId": "string",
+    "status": "string",
+    "plannedMinutes": number,
+    "actualMinutes": number,
+    "startedAt": "string",
+    "completedAt": "string",
+    "comments": "string"
+  }
+}
+```
+
+#### Update Work Order
+```http
+PUT /work-orders/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string",
+  "plannedMinutes": number,
+  "operatorId": "string",
+  "comments": "string"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "name": "string",
+    "plannedMinutes": number,
+    "operatorId": "string",
+    "comments": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Start Work Order
+```http
+POST /work-orders/:id/start
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "operatorId": "string"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "status": "Started",
+    "startedAt": "string",
+    "operatorId": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Pause Work Order
+```http
+POST /work-orders/:id/pause
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "comments": "string"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "status": "Paused",
+    "comments": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Complete Work Order
+```http
+POST /work-orders/:id/complete
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "actualMinutes": number,
+  "comments": "string"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "status": "Completed",
+    "completedAt": "string",
+    "actualMinutes": number,
+    "comments": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Cancel Work Order
+```http
+POST /work-orders/:id/cancel
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "reason": "string"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "status": "Canceled",
+    "comments": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Delete Work Order
+```http
+DELETE /work-orders/:id
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "message": "Work order deleted successfully"
+}
+```
+
+#### Get Work Order Stats
+```http
+GET /work-orders/stats
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": {
+    "Queued": {
+      "count": number,
+      "totalPlannedMinutes": number,
+      "totalActualMinutes": number
+    },
+    "Started": {
+      "count": number,
+      "totalPlannedMinutes": number,
+      "totalActualMinutes": number
+    },
+    "Completed": {
+      "count": number,
+      "totalPlannedMinutes": number,
+      "totalActualMinutes": number
+    }
+  }
+}
+```
+
+### 🔧 Work Centers API (`/work-centers`)
+
+#### List Work Centers
+```http
+GET /work-centers?search=string&location=string&isActive=boolean&page=number&limit=number
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "string",
+      "name": "string",
+      "location": "string",
+      "costPerHour": number,
+      "isActive": boolean,
+      "capacity": number,
+      "downtime": number
+    }
+  ],
+  "pagination": {
+    "total": number,
+    "page": number,
+    "limit": number,
+    "totalPages": number
+  }
+}
+```
+
+#### Create Work Center
+```http
+POST /work-centers
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string",
+  "location": "string",
+  "costPerHour": number,
+  "capacity": number,
+  "downtime": number,
+  "isActive": boolean
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "name": "string",
+    "location": "string",
+    "costPerHour": number,
+    "isActive": boolean,
+    "capacity": number,
+    "downtime": number,
+    "createdAt": "string",
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Get Work Center by ID
+```http
+GET /work-centers/:id
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "name": "string",
+    "location": "string",
+    "costPerHour": number,
+    "isActive": boolean,
+    "capacity": number,
+    "downtime": number
+  }
+}
+```
+
+#### Update Work Center
+```http
+PUT /work-centers/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string",
+  "location": "string",
+  "costPerHour": number,
+  "capacity": number,
+  "downtime": number,
+  "isActive": boolean
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "name": "string",
+    "location": "string",
+    "costPerHour": number,
+    "isActive": boolean,
+    "capacity": number,
+    "downtime": number,
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Delete Work Center
+```http
+DELETE /work-centers/:id
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "message": "Work center deleted successfully"
+}
+```
+
+#### Get Work Center Utilization
+```http
+GET /work-centers/:id/utilization?startDate=string&endDate=string
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": {
+    "workCenter": {
+      "id": "string",
+      "name": "string",
+      "location": "string",
+      "costPerHour": number,
+      "capacity": number,
+      "downtime": number
+    },
+    "utilization": {
+      "totalPlannedMinutes": number,
+      "totalActualMinutes": number,
+      "efficiency": number,
+      "completedOrders": number,
+      "inProgressOrders": number,
+      "totalOrders": number
+    }
+  }
+}
+```
+
+#### Get All Work Centers Utilization
+```http
+GET /work-centers/utilization?startDate=string&endDate=string
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "workCenter": {
+        "id": "string",
+        "name": "string",
+        "location": "string",
+        "costPerHour": number,
+        "capacity": number,
+        "downtime": number
+      },
+      "utilization": {
+        "totalPlannedMinutes": number,
+        "totalActualMinutes": number,
+        "efficiency": number,
+        "completedOrders": number,
+        "inProgressOrders": number,
+        "totalOrders": number
+      }
+    }
+  ]
+}
+```
+
+#### Update Work Center Downtime
+```http
+PUT /work-centers/:id/downtime
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "downtime": number
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "_id": "string",
+    "name": "string",
+    "downtime": number,
+    "updatedAt": "string"
+  }
+}
+```
+
+#### Get Work Center Stats
+```http
+GET /work-centers/stats
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": {
+    "active": {
+      "count": number,
+      "totalCapacity": number,
+      "totalDowntime": number,
+      "avgCostPerHour": number
+    },
+    "inactive": {
+      "count": number,
+      "totalCapacity": number,
+      "totalDowntime": number,
+      "avgCostPerHour": number
+    }
+  }
+}
+```
+
 ### 📈 Dashboard API (`/dashboard`)
 
-_Note: Dashboard endpoints are currently placeholder implementations_
+#### Get Dashboard Stats
+```http
+GET /dashboard/stats
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": {
+    "manufacturingOrders": {
+      "completed": number,
+      "inProgress": number,
+      "planned": number,
+      "canceled": number,
+      "total": number
+    },
+    "workOrders": {
+      "completed": number,
+      "inProgress": number,
+      "queued": number,
+      "total": number
+    },
+    "products": {
+      "rawMaterials": number,
+      "finishedGoods": number,
+      "total": number
+    },
+    "inventory": {
+      "totalItems": number,
+      "totalQuantity": number,
+      "totalReserved": number,
+      "availableQuantity": number
+    },
+    "workCenters": {
+      "active": number,
+      "total": number
+    },
+    "efficiency": {
+      "overall": number,
+      "totalPlannedMinutes": number,
+      "totalActualMinutes": number
+    },
+    "kpis": {
+      "completionRate": number,
+      "onTimeDelivery": number,
+      "resourceUtilization": number,
+      "inventoryTurnover": number
+    }
+  }
+}
+```
+
+#### Get Recent Activity
+```http
+GET /dashboard/recent-activity?limit=number
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "type": "manufacturing_order" | "work_order",
+      "id": "string",
+      "title": "string",
+      "description": "string",
+      "status": "string",
+      "assignee": "string",
+      "updatedAt": "string"
+    }
+  ]
+}
+```
+
+#### Get Alerts
+```http
+GET /dashboard/alerts
+Authorization: Bearer <token>
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "type": "low_stock" | "overdue_order" | "high_downtime",
+      "severity": "warning" | "error",
+      "title": "string",
+      "message": "string",
+      "productId": "string",
+      "quantity": number
+    }
+  ]
+}
+```
 
 ### 📊 Reports API (`/reports`)
 
