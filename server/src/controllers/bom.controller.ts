@@ -26,10 +26,16 @@ export class BomController {
   async list(req: Request, res: Response, next: NextFunction) {
     try {
       const query = req.query as FilterQuery;
-      const boms = await this.bomService.list(query);
+      const result = await this.bomService.list(query);
       return res.json({
         success: true,
-        data: boms,
+        data: result.data,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+        },
       });
     } catch (error) {
       next(error);

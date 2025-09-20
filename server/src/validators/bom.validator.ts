@@ -22,26 +22,21 @@ export const createBOMValidator = [
     .matches(/^[0-9]+\.[0-9]+\.[0-9]+$/)
     .withMessage("Version must be in semantic versioning format (e.g., 1.0.0)"),
 
-  body("components")
+  body("items")
     .isArray({ min: 1 })
     .withMessage("At least one component is required"),
 
-  body("components.*.productId")
+  body("items.*.componentId")
     .notEmpty()
-    .withMessage("Component product ID is required")
+    .withMessage("Component ID is required")
     .custom((value) => mongoose.Types.ObjectId.isValid(value))
-    .withMessage("Invalid component product ID format"),
+    .withMessage("Invalid component ID format"),
 
-  body("components.*.quantity")
+  body("items.*.qtyPerUnit")
     .isNumeric()
-    .withMessage("Component quantity must be a number")
+    .withMessage("Quantity per unit must be a number")
     .isFloat({ min: 0.01 })
-    .withMessage("Component quantity must be greater than 0"),
-
-  body("components.*.unitOfMeasure")
-    .trim()
-    .notEmpty()
-    .withMessage("Component unit of measure is required"),
+    .withMessage("Quantity per unit must be greater than 0"),
 
   body("notes")
     .optional()
@@ -63,24 +58,22 @@ export const updateBOMValidator = [
     .matches(/^[0-9]+\.[0-9]+\.[0-9]+$/)
     .withMessage("Version must be in semantic versioning format (e.g., 1.0.0)"),
 
-  body("components")
+  body("items")
     .optional()
     .isArray({ min: 1 })
     .withMessage("At least one component is required"),
 
-  body("components.*.productId")
+  body("items.*.componentId")
     .optional()
     .custom((value) => mongoose.Types.ObjectId.isValid(value))
-    .withMessage("Invalid component product ID format"),
+    .withMessage("Invalid component ID format"),
 
-  body("components.*.quantity")
+  body("items.*.qtyPerUnit")
     .optional()
     .isNumeric()
-    .withMessage("Component quantity must be a number")
+    .withMessage("Quantity per unit must be a number")
     .isFloat({ min: 0.01 })
-    .withMessage("Component quantity must be greater than 0"),
-
-  body("components.*.unitOfMeasure").optional().trim(),
+    .withMessage("Quantity per unit must be greater than 0"),
 
   body("notes")
     .optional()

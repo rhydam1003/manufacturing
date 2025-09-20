@@ -6,6 +6,8 @@ export interface IProduct extends Document {
   unit: string;
   type: "Raw" | "Finished";
   defaultWarehouseId: Types.ObjectId;
+  cost?: number;
+  category?: string;
 }
 
 const productSchema = new Schema<IProduct>(
@@ -19,6 +21,8 @@ const productSchema = new Schema<IProduct>(
       ref: "Warehouse",
       required: true,
     },
+    cost: { type: Number, default: 0 },
+    category: { type: String },
   },
   {
     collection: "products",

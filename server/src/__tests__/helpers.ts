@@ -3,16 +3,13 @@ import { Product } from "../models/product.model";
 import { BOM } from "../models/bom.model";
 
 export const createTestProduct = async (data: any = {}) => {
-  const uniqueSuffix = Date.now().toString().slice(-4);
+  const uniqueSuffix = Date.now().toString() + Math.random().toString(36).substr(2, 5);
   const defaultProduct = {
     name: "Test Product",
     sku: `TP${uniqueSuffix}`,
-    unitOfMeasure: "pcs",
+    unit: "pcs",
     type: "Finished",
     defaultWarehouseId: new Types.ObjectId(),
-    description: "Test product description",
-    cost: 100,
-    price: 150,
     ...data,
   };
 
@@ -23,14 +20,15 @@ export const createTestBOM = async (data: any = {}) => {
   const product = await createTestProduct();
   const component = await createTestProduct({
     name: "Component",
-    sku: `CP${Date.now().toString().slice(-4)}`,
-    cost: 50,
+    sku: `CP${Date.now().toString() + Math.random().toString(36).substr(2, 5)}`,
     type: "Raw",
+    cost: 50,
   });
 
   const defaultBOM = {
     productId: product._id,
-    version: 1,
+    name: "Test BOM",
+    version: "1.0.0",
     isActive: true,
     items: [
       {

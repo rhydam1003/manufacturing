@@ -1,12 +1,20 @@
 import { Types, SortOrder } from "mongoose";
 import { Product } from "../models/product.model";
+import { BOM } from "../models/bom.model";
 import { FilterQuery } from "../types";
 
 export class ProductService {
   async createProduct(data: any) {
-    const product = new Product(data);
-    await product.save();
-    return product;
+    try {
+      const product = new Product(data);
+      await product.save();
+      return product;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new Error("Product with this SKU already exists");
+      }
+      throw error;
+    }
   }
 
   async listProducts(query: FilterQuery = {}) {
@@ -52,6 +60,9 @@ export class ProductService {
       throw new Error("Invalid product ID");
     }
     const product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Product not found");
+    }
     return product;
   }
 
@@ -70,6 +81,19 @@ export class ProductService {
     if (!Types.ObjectId.isValid(id)) {
       throw new Error("Invalid product ID");
     }
+    
+    // Check if product is used in any BOM
+    const bomUsage = await BOM.findOne({
+      $or: [
+        { productId: id },
+        { "items.componentId": id }
+      ]
+    });
+    
+    if (bomUsage) {
+      throw new Error("Cannot delete product that is used in BOMs");
+    }
+    
     const product = await Product.findByIdAndDelete(id);
     if (!product) {
       throw new Error("Product not found");
