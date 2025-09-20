@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
 import { connectRedis } from "./config/redis";
 import { setupSwagger } from "./config/swagger";
-import { errorMiddleware } from "./middleware/error.middleware";
+import { errorHandler } from "./middleware/error.middleware";
 import { rateLimitMiddleware } from "./middleware/rate-limit.middleware";
 import { logger } from "./utils/logger";
 import routes from "./routes";
@@ -40,7 +40,7 @@ app.use("/api/v1", routes);
 setupSwagger(app);
 
 // Error handling
-app.use(errorMiddleware);
+app.use(errorHandler);
 
 // Health check
 app.get("/health", (req, res) => {
