@@ -698,4 +698,4 @@ chmod +x scripts/*
 
 ---
 
-**Built with ❤️ for modern A & R manufacturing operations**
+**Built with ❤️ for modern manufacturing operations**
