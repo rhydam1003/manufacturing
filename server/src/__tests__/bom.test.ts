@@ -13,7 +13,8 @@ describe("BOM API Endpoints", () => {
         .post("/api/bom")
         .send({
           productId: product._id,
-          version: 1,
+          name: "Test BOM",
+          version: "1.0.0",
           items: [
             {
               componentId: component._id,
@@ -39,7 +40,7 @@ describe("BOM API Endpoints", () => {
 
     it("should return 400 for invalid input", async () => {
       const response = await request(app).post("/api/bom").send({
-        version: 1,
+        version: "1.0.0",
         // Missing required productId
       });
 
@@ -96,7 +97,7 @@ describe("BOM API Endpoints", () => {
   describe("PUT /api/bom/:id", () => {
     it("should update a BOM", async () => {
       const { bom } = await createTestBOM();
-      const newVersion = 2;
+      const newVersion = "2.0.0";
 
       const response = await request(app)
         .put(`/api/bom/${bom._id}`)

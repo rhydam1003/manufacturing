@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import mongoose from "mongoose";
 
 export const createProductValidator = [
   body("name")
@@ -8,50 +9,39 @@ export const createProductValidator = [
     .isLength({ min: 2, max: 100 })
     .withMessage("Product name must be between 2 and 100 characters"),
 
-  body("code")
+  body("sku")
     .trim()
     .notEmpty()
-    .withMessage("Product code is required")
+    .withMessage("SKU is required")
     .matches(/^[A-Z0-9-]+$/)
     .withMessage(
-      "Product code must contain only uppercase letters, numbers and hyphens"
+      "SKU must contain only uppercase letters, numbers and hyphens"
     ),
 
-  body("description")
-    .optional()
-    .trim()
-    .isLength({ max: 500 })
-    .withMessage("Description cannot exceed 500 characters"),
-
-  body("unitOfMeasure")
+  body("unit")
     .trim()
     .notEmpty()
-    .withMessage("Unit of measure is required"),
+    .withMessage("Unit is required"),
+
+  body("type")
+    .trim()
+    .notEmpty()
+    .withMessage("Type is required")
+    .isIn(["Raw", "Finished"])
+    .withMessage("Type must be either 'Raw' or 'Finished'"),
+
+  body("defaultWarehouseId")
+    .notEmpty()
+    .withMessage("Default warehouse ID is required")
+    .custom((value) => mongoose.Types.ObjectId.isValid(value))
+    .withMessage("Invalid warehouse ID format"),
 
   body("cost")
+    .optional()
     .isNumeric()
     .withMessage("Cost must be a number")
     .isFloat({ min: 0 })
     .withMessage("Cost cannot be negative"),
-
-  body("category")
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .withMessage("Category cannot exceed 50 characters"),
-
-  body("tags").optional().isArray().withMessage("Tags must be an array"),
-
-  body("tags.*")
-    .optional()
-    .trim()
-    .isLength({ max: 20 })
-    .withMessage("Each tag cannot exceed 20 characters"),
-
-  body("isActive")
-    .optional()
-    .isBoolean()
-    .withMessage("isActive must be a boolean"),
 ];
 
 export const updateProductValidator = [
@@ -61,21 +51,26 @@ export const updateProductValidator = [
     .isLength({ min: 2, max: 100 })
     .withMessage("Product name must be between 2 and 100 characters"),
 
-  body("code")
+  body("sku")
     .optional()
     .trim()
     .matches(/^[A-Z0-9-]+$/)
     .withMessage(
-      "Product code must contain only uppercase letters, numbers and hyphens"
+      "SKU must contain only uppercase letters, numbers and hyphens"
     ),
 
-  body("description")
+  body("unit").optional().trim(),
+
+  body("type")
     .optional()
     .trim()
-    .isLength({ max: 500 })
-    .withMessage("Description cannot exceed 500 characters"),
+    .isIn(["Raw", "Finished"])
+    .withMessage("Type must be either 'Raw' or 'Finished'"),
 
-  body("unitOfMeasure").optional().trim(),
+  body("defaultWarehouseId")
+    .optional()
+    .custom((value) => mongoose.Types.ObjectId.isValid(value))
+    .withMessage("Invalid warehouse ID format"),
 
   body("cost")
     .optional()
@@ -83,23 +78,4 @@ export const updateProductValidator = [
     .withMessage("Cost must be a number")
     .isFloat({ min: 0 })
     .withMessage("Cost cannot be negative"),
-
-  body("category")
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .withMessage("Category cannot exceed 50 characters"),
-
-  body("tags").optional().isArray().withMessage("Tags must be an array"),
-
-  body("tags.*")
-    .optional()
-    .trim()
-    .isLength({ max: 20 })
-    .withMessage("Each tag cannot exceed 20 characters"),
-
-  body("isActive")
-    .optional()
-    .isBoolean()
-    .withMessage("isActive must be a boolean"),
 ];

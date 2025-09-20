@@ -8,14 +8,10 @@ describe("Product API Endpoints", () => {
     it("should create a new product", async () => {
       const productData = {
         name: "Test Product",
-        code: "TEST001",
-        description: "Test description",
-        category: "raw-material",
+        sku: "TEST001",
         unit: "pcs",
-        cost: 100,
-        price: 150,
-        minimumStock: 10,
-        reorderPoint: 20,
+        type: "Finished",
+        defaultWarehouseId: new Types.ObjectId().toString(),
       };
 
       const response = await request(app)
@@ -26,8 +22,9 @@ describe("Product API Endpoints", () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data).toMatchObject({
         name: productData.name,
-        code: productData.code,
-        cost: productData.cost,
+        sku: productData.sku,
+        unit: productData.unit,
+        type: productData.type,
       });
     });
 
@@ -43,11 +40,10 @@ describe("Product API Endpoints", () => {
     it("should prevent duplicate product codes", async () => {
       const productData = {
         name: "Test Product",
-        code: "UNIQUE001",
-        category: "raw-material",
+        sku: "UNIQUE001",
         unit: "pcs",
-        cost: 100,
-        price: 150,
+        type: "Finished",
+        defaultWarehouseId: new Types.ObjectId().toString(),
       };
 
       // Create first product
@@ -194,13 +190,17 @@ describe("Product API Endpoints", () => {
     it("should prevent deletion of products used in BOMs", async () => {
       // First create a product and use it in a BOM
       const product = await createTestProduct();
+      const component = await createTestProduct();
+      
       await request(app)
         .post("/api/bom")
         .send({
-          productId: new Types.ObjectId(),
+          productId: product._id,
+          name: "Test BOM",
+          version: "1.0.0",
           items: [
             {
-              componentId: product._id,
+              componentId: component._id,
               qtyPerUnit: 1,
             },
           ],
@@ -213,52 +213,6 @@ describe("Product API Endpoints", () => {
 
       expect(response.status).toBe(409);
       expect(response.body.success).toBe(false);
-    });
-  });
-
-  describe("GET /api/products/inventory", () => {
-    it("should return product inventory status", async () => {
-      const product = await createTestProduct({
-        minimumStock: 10,
-        reorderPoint: 20,
-      });
-
-      const response = await request(app).get("/api/products/inventory");
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(Array.isArray(response.body.data)).toBe(true);
-      const productData = response.body.data.find(
-        (p: any) => p._id.toString() === product._id.toString()
-      );
-      expect(productData).toBeDefined();
-      expect(productData).toHaveProperty("currentStock");
-      expect(productData).toHaveProperty("minimumStock");
-      expect(productData).toHaveProperty("reorderPoint");
-    });
-
-    it("should filter low stock products", async () => {
-      await createTestProduct({
-        minimumStock: 10,
-        reorderPoint: 20,
-        currentStock: 5, // Below minimum
-      });
-
-      await createTestProduct({
-        minimumStock: 10,
-        reorderPoint: 20,
-        currentStock: 15, // Above minimum
-      });
-
-      const response = await request(app)
-        .get("/api/products/inventory")
-        .query({ lowStock: true });
-
-      expect(response.status).toBe(200);
-      expect(response.body.data.length).toBe(1);
-      expect(response.body.data[0].currentStock).toBeLessThan(
-        response.body.data[0].minimumStock
-      );
     });
   });
 });

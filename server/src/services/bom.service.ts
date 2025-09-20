@@ -12,10 +12,10 @@ export class BOMService {
     }
 
     // Validate component products exist
-    for (const component of data.components) {
-      const componentProduct = await Product.findById(component.productId);
+    for (const item of data.items) {
+      const componentProduct = await Product.findById(item.componentId);
       if (!componentProduct) {
-        throw new Error(`Component product ${component.productId} not found`);
+        throw new Error(`Component product ${item.componentId} not found`);
       }
     }
 
@@ -48,7 +48,7 @@ export class BOMService {
     const [boms, total] = await Promise.all([
       BOM.find(filter)
         .populate("productId", "name code")
-        .populate("components.productId", "name code")
+        .populate("items.componentId", "name sku")
         .sort(sort as any)
         .skip(skip)
         .limit(Number(limit)),
@@ -71,7 +71,7 @@ export class BOMService {
 
     const bom = await BOM.findById(id)
       .populate("productId", "name code")
-      .populate("components.productId", "name code");
+      .populate("items.componentId", "name sku");
 
     return bom;
   }
@@ -90,18 +90,18 @@ export class BOMService {
     }
 
     // Validate component products if changed
-    if (data.components) {
-      for (const component of data.components) {
-        const componentProduct = await Product.findById(component.productId);
+    if (data.items) {
+      for (const item of data.items) {
+        const componentProduct = await Product.findById(item.componentId);
         if (!componentProduct) {
-          throw new Error(`Component product ${component.productId} not found`);
+          throw new Error(`Component product ${item.componentId} not found`);
         }
       }
     }
 
     const bom = await BOM.findByIdAndUpdate(id, data, { new: true })
       .populate("productId", "name code")
-      .populate("components.productId", "name code");
+      .populate("items.componentId", "name sku");
 
     if (!bom) {
       throw new Error("BOM not found");
@@ -151,13 +151,13 @@ export class BOMService {
   async calculateCost(id: string): Promise<{
     id: Types.ObjectId;
     product: Types.ObjectId;
-    version: number;
+    version: string;
     totalCost: number;
     items: Array<{
       component: {
         id: Types.ObjectId;
         name: string;
-        code: string;
+        sku: string;
       };
       qtyPerUnit: number;
       unitCost: number;
@@ -172,7 +172,7 @@ export class BOMService {
     const bom = await BOM.findById(id)
       .populate({
         path: "items.componentId",
-        select: "name code cost",
+        select: "name sku cost",
       })
       .populate("productId", "name code");
 
@@ -192,7 +192,7 @@ export class BOMService {
         component: {
           id: component._id,
           name: component.name,
-          code: component.code,
+          sku: component.sku,
         },
         qtyPerUnit: item.qtyPerUnit,
         unitCost: component.cost,
@@ -219,7 +219,7 @@ export class BOMService {
       "items.componentId": productId,
     })
       .populate("productId", "name code")
-      .populate("items.componentId", "name code");
+      .populate("items.componentId", "name sku");
 
     return boms.map((bom) => ({
       id: bom._id,

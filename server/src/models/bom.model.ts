@@ -13,7 +13,8 @@ interface BOMOperation {
 
 export interface IBOM extends Document {
   productId: Types.ObjectId;
-  version: number;
+  name: string;
+  version: string;
   isActive: boolean;
   items: BOMItem[];
   operations: BOMOperation[];
@@ -22,7 +23,8 @@ export interface IBOM extends Document {
 const bomSchema = new Schema<IBOM>(
   {
     productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
-    version: { type: Number, required: true },
+    name: { type: String, required: true },
+    version: { type: String, required: true },
     isActive: { type: Boolean, default: true },
     items: [
       {
