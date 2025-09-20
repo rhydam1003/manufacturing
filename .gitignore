@@ -1,0 +1,76 @@
+# =====================
+# Node / Express (Server)
+# =====================
+# Node modules
+server/node_modules/
+client/node_modules/
+
+# Logs
+server/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+server/pids/
+server/*.pid
+server/*.seed
+server/*.pid.lock
+
+# Environment variables
+server/.env
+client/.env
+
+# Debug
+server/.nyc_output/
+server/.sass-cache
+
+# Dependency directories
+server/.cache/
+client/.cache/
+server/dist/
+server/build/
+
+# Coverage
+server/coverage/
+client/coverage/
+
+# =====================
+# React (Client)
+# =====================
+client/build/
+client/.DS_Store
+client/.pnp
+client/.pnp.js
+client/.parcel-cache
+client/.eslintcache
+client/.turbo
+
+# =====================
+# OS generated files
+# =====================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# =====================
+# IDEs / Editors
+# =====================
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# =====================
+# Misc
+# =====================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
