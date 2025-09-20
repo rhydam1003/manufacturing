@@ -49,7 +49,7 @@ export class InventoryService {
   }
 
   async adjustStock(data: any, userId: string) {
-    const { productId, warehouseId, quantity, type, reason } = data;
+    const { productId, warehouseId, quantity, type, reason, allowNegative = false } = data;
 
     // Validate references
     const [product, warehouse] = await Promise.all([
@@ -60,25 +60,44 @@ export class InventoryService {
     if (!product) throw new Error("Product not found");
     if (!warehouse) throw new Error("Warehouse not found");
 
-    // Create or update inventory item
-    const inventoryItem = await InventoryItem.findOneAndUpdate(
-      { productId, warehouseId },
-      {
-        $inc: { quantity: type === "increase" ? quantity : -quantity },
-        $setOnInsert: { productId, warehouseId },
-      },
-      { new: true, upsert: true }
-    );
+    // Get current inventory
+    let inventoryItem = await InventoryItem.findOne({ productId, warehouseId });
+    
+    if (!inventoryItem) {
+      inventoryItem = new InventoryItem({
+        productId,
+        warehouseId,
+        qtyOnHand: 0,
+        qtyReserved: 0,
+      });
+    }
+
+    // Calculate new quantity
+    let newQuantity = inventoryItem.qtyOnHand;
+    if (type === "increase") {
+      newQuantity += quantity;
+    } else if (type === "decrease") {
+      newQuantity -= quantity;
+      // Prevent negative stock unless explicitly allowed
+      if (newQuantity < 0 && !allowNegative) {
+        throw new Error(`Insufficient stock. Available: ${inventoryItem.qtyOnHand}, Required: ${quantity}`);
+      }
+    } else {
+      newQuantity = quantity; // Set to specific value
+    }
+
+    // Update inventory
+    inventoryItem.qtyOnHand = newQuantity;
+    await inventoryItem.save();
 
     // Create transaction record
     const transaction = new StockTransaction({
       productId,
       warehouseId,
-      quantity: Math.abs(quantity),
-      type,
-      reason,
-      userId,
-      balanceAfter: inventoryItem.quantity,
+      qty: Math.abs(quantity),
+      type: type === "increase" ? "IN" : "OUT",
+      refType: "adjustment",
+      refId: new Types.ObjectId(),
     });
 
     await transaction.save();

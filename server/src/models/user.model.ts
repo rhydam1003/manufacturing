@@ -6,6 +6,7 @@ export interface IUser extends Document {
   name: string;
   phone?: string;
   role: Types.ObjectId;
+  roleId: Types.ObjectId; // Add missing field
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -18,6 +19,7 @@ const userSchema = new Schema<IUser>(
     name: { type: String, required: true },
     phone: { type: String },
     role: { type: Schema.Types.ObjectId, ref: "Role", required: true },
+    roleId: { type: Schema.Types.ObjectId, ref: "Role", required: true }, // Add missing field
     isActive: { type: Boolean, default: true },
   },
   {
