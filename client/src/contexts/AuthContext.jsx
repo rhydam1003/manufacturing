@@ -128,14 +128,14 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data) {
         if (response.data.data) {
-          token = response.data.data.token || response.data.data.accessToken;
+          token = response.data.data.accessToken || response.data.data.token;
           user = response.data.data.user;
         } else {
-          token = response.data.token || response.data.accessToken;
+          token = response.data.accessToken || response.data.token;
           user = response.data.user;
         }
       } else {
-        token = response.token || response.accessToken;
+        token = response.accessToken || response.token;
         user = response.user;
       }
 
@@ -184,17 +184,15 @@ export const AuthProvider = ({ children }) => {
       let token, user;
       
       if (response.data) {
-        // Check if response has nested data structure
         if (response.data.data) {
-          token = response.data.data.token || response.data.data.accessToken;
+          token = response.data.data.accessToken || response.data.data.token;
           user = response.data.data.user;
         } else {
-          token = response.data.token || response.data.accessToken;
+          token = response.data.accessToken || response.data.token;
           user = response.data.user;
         }
       } else {
-        // Direct response structure
-        token = response.token || response.accessToken;
+        token = response.accessToken || response.token;
         user = response.user;
       }
 

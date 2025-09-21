@@ -22,6 +22,7 @@ import WorkCenters from "@/pages/WorkCenters";
 import Reports from "@/pages/Reports";
 import Profile from "@/pages/Profile";
 import APITest from "@/pages/APITest";
+import AuthTest from "@/pages/AuthTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="work-centers" element={<WorkCenters />} />
               <Route path="reports" element={<Reports />} />
               <Route path="api-test" element={<APITest />} />
+              <Route path="auth-test" element={<AuthTest />} />
               <Route path="settings" element={<div className="p-8 text-center text-muted-foreground">Settings - Coming Soon</div>} />
               <Route path="profile" element={<Profile />} />
             </Route>
