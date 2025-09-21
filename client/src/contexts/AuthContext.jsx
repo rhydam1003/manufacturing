@@ -51,7 +51,17 @@ export const AuthProvider = ({ children }) => {
       }
 
       const response = await authAPI.getCurrentUser();
-      dispatch({ type: 'SET_USER', payload: response.data });
+      console.log('Auth check response:', response); // Debug log
+      
+      // Handle different response structures
+      let user;
+      if (response.data) {
+        user = response.data.data || response.data;
+      } else {
+        user = response;
+      }
+      
+      dispatch({ type: 'SET_USER', payload: user });
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('authToken');
@@ -69,9 +79,29 @@ export const AuthProvider = ({ children }) => {
 
       // Always use backend for login, including demo credentials
       const response = await authAPI.login(credentials);
-      // Support both { token, user } and { accessToken, user }
-      const token = response.data.token || response.data.accessToken;
-      const user = response.data.user;
+      console.log('Login response:', response); // Debug log
+      
+      // Handle different response structures
+      let token, user;
+      
+      if (response.data) {
+        // Check if response has nested data structure
+        if (response.data.data) {
+          token = response.data.data.token || response.data.data.accessToken;
+          user = response.data.data.user;
+        } else {
+          token = response.data.token || response.data.accessToken;
+          user = response.data.user;
+        }
+      } else {
+        // Direct response structure
+        token = response.token || response.accessToken;
+        user = response.user;
+      }
+
+      if (!token || !user) {
+        throw new Error('Invalid response structure from server');
+      }
 
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -83,7 +113,8 @@ export const AuthProvider = ({ children }) => {
       });
       return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Login failed';
+      console.error('Login error:', error); // Debug log
+      const errorMessage = error.response?.data?.error || error.message || 'Login failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       return { success: false, error: errorMessage };
     } finally {
@@ -97,7 +128,29 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_ERROR', payload: null });
 
       const response = await authAPI.register(userData);
-      const { token, user } = response.data;
+      console.log('Register response:', response); // Debug log
+      
+      // Handle different response structures
+      let token, user;
+      
+      if (response.data) {
+        // Check if response has nested data structure
+        if (response.data.data) {
+          token = response.data.data.token || response.data.data.accessToken;
+          user = response.data.data.user;
+        } else {
+          token = response.data.token || response.data.accessToken;
+          user = response.data.user;
+        }
+      } else {
+        // Direct response structure
+        token = response.token || response.accessToken;
+        user = response.user;
+      }
+
+      if (!token || !user) {
+        throw new Error('Invalid response structure from server');
+      }
 
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -111,7 +164,8 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Registration failed';
+      console.error('Register error:', error); // Debug log
+      const errorMessage = error.response?.data?.error || error.message || 'Registration failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       return { success: false, error: errorMessage };
     } finally {

@@ -35,6 +35,17 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Handle JSON parsing errors
+    if (error.response && error.response.data && typeof error.response.data === 'string') {
+      // Check if response is HTML instead of JSON
+      if (error.response.data.includes('<!DOCTYPE') || error.response.data.includes('<html')) {
+        const htmlError = new Error('Server returned HTML instead of JSON. Please check if the server is running properly.');
+        htmlError.response = error.response;
+        htmlError.response.data = { error: 'Server is not responding properly. Please check if the backend server is running.' };
+        return Promise.reject(htmlError);
+      }
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -74,10 +85,10 @@ apiClient.interceptors.response.use(
         description: 'Something went wrong on our end. Please try again later.',
         variant: 'destructive',
       });
-    } else if (error.code === 'NETWORK_ERROR') {
+    } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
       toast({
         title: 'Network Error',
-        description: 'Please check your internet connection.',
+        description: 'Please check your internet connection and server status.',
         variant: 'destructive',
       });
     }

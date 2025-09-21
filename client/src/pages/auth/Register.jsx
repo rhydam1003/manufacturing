@@ -96,6 +96,17 @@ const Register = () => {
     try {
       // Fetch roles from backend to get ObjectId for selected role
       const res = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/roles');
+      
+      // Check if response is ok and content type is JSON
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned non-JSON response. Please check if the server is running.');
+      }
+      
       const data = await res.json();
       const found = data.roles?.find((r) => r.name === formData.role);
       
@@ -109,9 +120,20 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Registration error:', error);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.message.includes('non-JSON response')) {
+        errorMessage = 'Server is not responding properly. Please check if the backend server is running.';
+      } else if (error.message.includes('HTTP error')) {
+        errorMessage = 'Server error occurred. Please try again later.';
+      } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+        errorMessage = 'Network error. Please check your internet connection and server status.';
+      }
+      
       setErrors(prev => ({
         ...prev,
-        submit: 'Registration failed. Please try again.'
+        submit: errorMessage
       }));
     }
   };
@@ -143,6 +165,12 @@ const Register = () => {
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {errors.submit && (
+                <Alert variant="destructive">
+                  <AlertDescription>{errors.submit}</AlertDescription>
                 </Alert>
               )}
 
