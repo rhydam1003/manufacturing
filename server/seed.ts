@@ -1,5 +1,8 @@
+
+
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -11,6 +14,7 @@ import { Warehouse } from "./src/models/warehouse.model";
 import { WorkCenter } from "./src/models/work-center.model";
 
 async function seed() {
+
   await mongoose.connect(process.env.MONGO_URI || "");
 
   // Clear collections
@@ -29,25 +33,40 @@ async function seed() {
     { name: "Operator", description: "Operator", permissions: ["view"] },
   ]);
 
-  // Seed users
-  const users = await User.insertMany([
+  // Seed users with hashed passwords and matching demo credentials
+  const demoUsers = [
     {
       email: "admin@example.com",
-      passwordHash: "admin123",
+      password: "admin123",
       name: "Admin User",
       role: roles[0]._id,
       roleId: roles[0]._id,
-      isActive: true,
     },
     {
       email: "manager@example.com",
-      passwordHash: "manager123",
+      password: "manager123",
       name: "Manager User",
       role: roles[1]._id,
       roleId: roles[1]._id,
-      isActive: true,
     },
-  ]);
+    {
+      email: "operator@example.com",
+      password: "operator123",
+      name: "Operator User",
+      role: roles[2]._id,
+      roleId: roles[2]._id,
+    },
+  ];
+
+  const users = await User.insertMany(
+    await Promise.all(
+      demoUsers.map(async (u) => ({
+        ...u,
+        passwordHash: await bcrypt.hash(u.password, 10),
+        isActive: true,
+      }))
+    )
+  );
 
   // Seed warehouses
   const warehouses = await Warehouse.insertMany([

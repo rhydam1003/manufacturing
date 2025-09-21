@@ -131,18 +131,39 @@ const Login = () => {
             <div className="text-center">
               <h4 className="text-sm font-medium mb-2">Demo Credentials</h4>
               <div className="text-xs text-muted-foreground space-y-1 mb-2">
-                <div>Email: admin@example.com</div>
-                <div>Password: &lt;your seeded password&gt;</div>
+                <div><b>Admin</b>: admin@example.com / admin123</div>
+                <div><b>Manager</b>: manager@example.com / manager123</div>
+                <div><b>Operator</b>: operator@example.com / operator123</div>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => setFormData({ email: "admin@mms.com", password: "admin123" })}
-              >
-                Autofill Demo Credentials
-              </Button>
+              <div className="flex flex-col gap-2 items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-56"
+                  onClick={() => setFormData({ email: "admin@example.com", password: "admin123" })}
+                >
+                  Autofill Admin Credentials
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-56"
+                  onClick={() => setFormData({ email: "manager@example.com", password: "manager123" })}
+                >
+                  Autofill Manager Credentials
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-56"
+                  onClick={() => setFormData({ email: "operator@example.com", password: "operator123" })}
+                >
+                  Autofill Operator Credentials
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
