@@ -36,6 +36,10 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      const storedUser = localStorage.getItem('user');
+      
+      console.log('Checking auth status - Token:', token ? 'Present' : 'Missing', 'User:', storedUser ? 'Present' : 'Missing');
+      
       if (!token) {
         dispatch({ type: 'SET_LOADING', payload: false });
         return;
@@ -43,15 +47,35 @@ export const AuthProvider = ({ children }) => {
 
       // Check for demo mode token
       if (token === 'demo-jwt-token') {
-        const storedUser = localStorage.getItem('user');
         if (storedUser) {
           dispatch({ type: 'SET_USER', payload: JSON.parse(storedUser) });
           return;
         }
       }
 
+      // If we have stored user data, use it immediately
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          dispatch({ type: 'SET_USER', payload: user });
+          console.log('Using stored user data');
+          
+          // Verify with server in background
+          authAPI.getCurrentUser().then(response => {
+            console.log('Background auth verification successful');
+          }).catch(error => {
+            console.warn('Background auth verification failed:', error);
+          });
+          
+          return;
+        } catch (parseError) {
+          console.error('Failed to parse stored user:', parseError);
+          localStorage.removeItem('user');
+        }
+      }
+
       const response = await authAPI.getCurrentUser();
-      console.log('Auth check response:', response); // Debug log
+      console.log('Auth check response:', response);
       
       // Handle different response structures
       let user;
@@ -61,12 +85,31 @@ export const AuthProvider = ({ children }) => {
         user = response;
       }
       
+      // Store user data for future use
+      localStorage.setItem('user', JSON.stringify(user));
       dispatch({ type: 'SET_USER', payload: user });
+      
     } catch (error) {
       console.error('Auth check failed:', error);
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      
+      // Only remove tokens if it's a 401 (unauthorized) error
+      if (error.response?.status === 401) {
+        console.log('401 error - removing tokens');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+      } else {
+        console.log('Non-401 error - keeping tokens, user can continue');
+        // For network errors, keep the user logged in
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            dispatch({ type: 'SET_USER', payload: JSON.parse(storedUser) });
+          } catch (parseError) {
+            console.error('Failed to parse stored user during error:', parseError);
+          }
+        }
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -77,15 +120,13 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      // Always use backend for login, including demo credentials
       const response = await authAPI.login(credentials);
-      console.log('Login response:', response); // Debug log
+      console.log('Login response:', response);
       
       // Handle different response structures
       let token, user;
       
       if (response.data) {
-        // Check if response has nested data structure
         if (response.data.data) {
           token = response.data.data.token || response.data.data.accessToken;
           user = response.data.data.user;
@@ -94,7 +135,6 @@ export const AuthProvider = ({ children }) => {
           user = response.data.user;
         }
       } else {
-        // Direct response structure
         token = response.token || response.accessToken;
         user = response.user;
       }
@@ -103,8 +143,18 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Invalid response structure from server');
       }
 
+      console.log('Storing token and user:', { token: token ? 'Present' : 'Missing', user: user ? 'Present' : 'Missing' });
+
+      // Store tokens and user data
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user));
+      
+      // Store refresh token if available
+      if (response.data?.refreshToken || response.refreshToken) {
+        const refreshToken = response.data?.refreshToken || response.refreshToken;
+        localStorage.setItem('refreshToken', refreshToken);
+        console.log('Refresh token stored');
+      }
 
       dispatch({ type: 'SET_USER', payload: user });
       toast({
@@ -113,7 +163,7 @@ export const AuthProvider = ({ children }) => {
       });
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error); // Debug log
+      console.error('Login error:', error);
       const errorMessage = error.response?.data?.error || error.message || 'Login failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       return { success: false, error: errorMessage };
