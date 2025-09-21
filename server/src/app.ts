@@ -18,13 +18,26 @@ const server = createServer(app);
 const PORT = process.env.PORT || 8080;
 
 // Security middleware
-app.use(helmet());
-app.use(
-  cors({
-    origin: ["http://localhost:8081"], // allow frontend dev server
-    credentials: true,
-  })
-);
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// CORS middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:8081');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    res.status(204).end();
+    return;
+  }
+  
+  next();
+});
 
 // Body parsing
 app.use(express.json({ limit: "10mb" }));
