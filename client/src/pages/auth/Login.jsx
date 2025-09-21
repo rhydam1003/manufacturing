@@ -130,10 +130,19 @@ const Login = () => {
           <CardContent className="pt-4">
             <div className="text-center">
               <h4 className="text-sm font-medium mb-2">Demo Credentials</h4>
-              <div className="text-xs text-muted-foreground space-y-1">
-                <div>Email: admin@mms.com</div>
-                <div>Password: admin123</div>
+              <div className="text-xs text-muted-foreground space-y-1 mb-2">
+                <div>Email: admin@example.com</div>
+                <div>Password: &lt;your seeded password&gt;</div>
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => setFormData({ email: "admin@mms.com", password: "admin123" })}
+              >
+                Autofill Demo Credentials
+              </Button>
             </div>
           </CardContent>
         </Card>

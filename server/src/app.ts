@@ -4,7 +4,7 @@ import helmet from "helmet";
 import { createServer } from "http";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
-import { connectRedis } from "./config/redis";
+// import { connectRedis } from "./config/redis";
 import { setupSwagger } from "./config/swagger";
 import { errorHandler } from "./middleware/error.middleware";
 import { rateLimitMiddleware } from "./middleware/rate-limit.middleware";
@@ -50,8 +50,8 @@ app.get("/health", (req, res) => {
 async function startServer() {
   try {
     // Connect to databases
-    await connectDatabase();
-    await connectRedis();
+  await connectDatabase();
+  // await connectRedis(); // Redis bypassed for local development
     // Start server
     server.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
