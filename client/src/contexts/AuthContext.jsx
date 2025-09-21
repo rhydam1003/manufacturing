@@ -67,43 +67,20 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      // Demo mode - bypass API for demo credentials
-      if (credentials.email === 'admin@mms.com' && credentials.password === 'admin123') {
-        const demoUser = {
-          id: 'demo-user-1',
-          name: 'Demo Administrator',
-          email: 'admin@mms.com',
-          role: 'admin'
-        };
-        const demoToken = 'demo-jwt-token';
-
-        localStorage.setItem('authToken', demoToken);
-        localStorage.setItem('user', JSON.stringify(demoUser));
-
-        dispatch({ type: 'SET_USER', payload: demoUser });
-        
-        toast({
-          title: 'Success',
-          description: 'Logged in successfully! (Demo Mode)',
-        });
-
-        return { success: true };
-      }
-
-      // Regular API call for non-demo credentials
+      // Always use backend for login, including demo credentials
       const response = await authAPI.login(credentials);
-      const { token, user } = response.data;
+      // Support both { token, user } and { accessToken, user }
+      const token = response.data.token || response.data.accessToken;
+      const user = response.data.user;
 
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user));
 
       dispatch({ type: 'SET_USER', payload: user });
-      
       toast({
         title: 'Success',
         description: 'Logged in successfully!',
       });
-
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'Login failed';

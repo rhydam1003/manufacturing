@@ -92,19 +92,36 @@ const Register = () => {
     }
 
     const { confirmPassword, ...submitData } = formData;
-    const result = await register(submitData);
+
+    try {
+      // Fetch roles from backend to get ObjectId for selected role
+      const res = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/roles');
+      const data = await res.json();
+      const found = data.roles?.find((r) => r.name === formData.role);
+      
+      const result = await register({
+        ...submitData,
+        role: found?._id || formData.role // fallback to role name if id not found
+      });
     
-    if (result.success) {
-      navigate('/dashboard');
+      if (result.success) {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: 'Registration failed. Please try again.'
+      }));
     }
   };
 
-  const roles = [
-    { value: 'manufacturing_manager', label: 'Manufacturing Manager' },
-    { value: 'operator', label: 'Operator / Shop-floor Worker' },
-    { value: 'inventory_manager', label: 'Inventory Manager' },
-    { value: 'admin', label: 'Business Owner / Admin' },
-  ];
+    // These must match the seeded role names and be replaced with their ObjectIds after fetching from backend
+    const roles = [
+      { value: 'Admin', label: 'Business Owner / Admin' },
+      { value: 'Manager', label: 'Manufacturing Manager' },
+      { value: 'Operator', label: 'Operator / Shop-floor Worker' },
+    ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-primary/5 flex items-center justify-center p-4">

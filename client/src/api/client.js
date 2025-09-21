@@ -2,7 +2,7 @@ import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
 
 // Base URL - use VITE_API_BASE_URL from .env
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api-docs';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 // Create axios instance
 const apiClient = axios.create({
