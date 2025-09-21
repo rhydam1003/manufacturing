@@ -82,7 +82,8 @@ const BOM = () => {
     try {
       setLoading(true);
       const response = await bomAPI.getAll();
-      setBoms(response.data || []);
+      console.log('BOM API response:', response);
+      setBoms(response || []);
     } catch (error) {
       console.error('Error fetching BOMs:', error);
       toast({
@@ -98,7 +99,8 @@ const BOM = () => {
   const fetchProducts = async () => {
     try {
       const response = await productsAPI.getAll();
-      setProducts(response.data || []);
+      console.log('Products for BOM:', response);
+      setProducts(response || []);
     } catch (error) {
       console.error('Error fetching products:', error);
     }

@@ -9,6 +9,7 @@ import {
   BarChart3,
   Settings,
   Wrench,
+  TestTube,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -139,6 +140,21 @@ const Sidebar = () => {
               >
                 <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
                 Settings
+              </NavLink>
+              <NavLink
+                to="/api-test"
+                className={({ isActive }) =>
+                  cn(
+                    'group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg smooth-transition',
+                    'hover:bg-secondary/80 hover:text-secondary-foreground',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'text-muted-foreground'
+                  )
+                }
+              >
+                <TestTube className="mr-3 h-5 w-5 flex-shrink-0" />
+                API Test
               </NavLink>
             </div>
           </div>

@@ -4,6 +4,32 @@ import { toast } from '@/hooks/use-toast';
 // Base URL - use VITE_API_BASE_URL from .env
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
+// Utility function to check if token is valid
+const isTokenValid = (token) => {
+  if (!token) return false;
+  
+  try {
+    // Check if token is a valid JWT format (has 3 parts separated by dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    
+    // Decode the payload to check expiration
+    const payload = JSON.parse(atob(parts[1]));
+    const now = Math.floor(Date.now() / 1000);
+    
+    // Check if token is expired
+    if (payload.exp && payload.exp < now) {
+      console.log('Token is expired');
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error validating token:', error);
+    return false;
+  }
+};
+
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -19,8 +45,17 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    if (token) {
+    console.log('API Request - Token:', token ? 'Present' : 'Missing', 'URL:', config.url);
+    
+    if (token && isTokenValid(token)) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else if (token && !isTokenValid(token)) {
+      console.warn('Token is invalid/expired, removing from storage');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+    } else {
+      console.warn('No valid auth token found for request:', config.url);
     }
     return config;
   },
@@ -47,6 +82,7 @@ apiClient.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log('401 Unauthorized - attempting token refresh');
       originalRequest._retry = true;
 
       try {
@@ -58,10 +94,19 @@ apiClient.interceptors.response.use(
           
           const { token } = response.data.data;
           localStorage.setItem('authToken', token);
+          console.log('Token refreshed successfully');
           
           return apiClient(originalRequest);
+        } else {
+          console.log('No refresh token available, redirecting to login');
+          // No refresh token, logout user
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
         }
       } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
         // Refresh failed, logout user
         localStorage.removeItem('authToken');
         localStorage.removeItem('refreshToken');

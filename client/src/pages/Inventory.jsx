@@ -89,7 +89,8 @@ const Inventory = () => {
     try {
       setLoading(true);
       const response = await inventoryAPI.getLevels();
-      setInventory(response.data || []);
+      console.log('Inventory API response:', response);
+      setInventory(response || []);
     } catch (error) {
       console.error('Error fetching inventory:', error);
       toast({
@@ -105,7 +106,8 @@ const Inventory = () => {
   const fetchProducts = async () => {
     try {
       const response = await productsAPI.getAll();
-      setProducts(response.data || []);
+      console.log('Products for inventory:', response);
+      setProducts(response || []);
     } catch (error) {
       console.error('Error fetching products:', error);
     }

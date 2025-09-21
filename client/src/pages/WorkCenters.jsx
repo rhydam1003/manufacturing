@@ -82,7 +82,8 @@ const WorkCenters = () => {
     try {
       setLoading(true);
       const response = await workCentersAPI.getAll();
-      setWorkCenters(response.data || []);
+      console.log('Work Centers API response:', response);
+      setWorkCenters(response || []);
     } catch (error) {
       console.error('Error fetching work centers:', error);
       toast({

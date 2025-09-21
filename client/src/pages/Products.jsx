@@ -78,7 +78,8 @@ const Products = () => {
     try {
       setLoading(true);
       const response = await productsAPI.getAll();
-      setProducts(response.data || []);
+      console.log('Products API response:', response);
+      setProducts(response || []);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({

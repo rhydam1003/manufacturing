@@ -55,9 +55,11 @@ const Dashboard = () => {
         dashboardAPI.getAlerts()
       ]);
       
-      setDashboardData(statsResponse.data);
-      setRecentActivity(activityResponse.data || []);
-      setAlerts(alertsResponse.data || []);
+      console.log('Dashboard API responses:', { statsResponse, activityResponse, alertsResponse });
+      
+      setDashboardData(statsResponse);
+      setRecentActivity(activityResponse || []);
+      setAlerts(alertsResponse || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast({

@@ -60,7 +60,8 @@ const WorkOrders = () => {
     try {
       setLoading(true);
       const response = await workOrdersAPI.getAll();
-      setWorkOrders(response.data || []);
+      console.log('Work Orders API response:', response);
+      setWorkOrders(response || []);
     } catch (error) {
       console.error('Error fetching work orders:', error);
       toast({
@@ -76,7 +77,8 @@ const WorkOrders = () => {
   const fetchWorkCenters = async () => {
     try {
       const response = await workCentersAPI.getAll();
-      setWorkCenters(response.data || []);
+      console.log('Work Centers for work orders:', response);
+      setWorkCenters(response || []);
     } catch (error) {
       console.error('Error fetching work centers:', error);
     }

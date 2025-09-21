@@ -82,7 +82,8 @@ const ManufacturingOrders = () => {
     try {
       setLoading(true);
       const response = await manufacturingOrdersAPI.getAll();
-      setOrders(response.data || []);
+      console.log('Manufacturing Orders API response:', response);
+      setOrders(response || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -98,7 +99,8 @@ const ManufacturingOrders = () => {
   const fetchProducts = async () => {
     try {
       const response = await productsAPI.getAll();
-      setProducts(response.data || []);
+      console.log('Products for manufacturing orders:', response);
+      setProducts(response || []);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -107,7 +109,8 @@ const ManufacturingOrders = () => {
   const fetchBOMs = async () => {
     try {
       const response = await bomAPI.getAll();
-      setBOMs(response.data || []);
+      console.log('BOMs for manufacturing orders:', response);
+      setBOMs(response || []);
     } catch (error) {
       console.error('Error fetching BOMs:', error);
     }
